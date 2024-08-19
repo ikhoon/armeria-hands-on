@@ -1,7 +1,7 @@
 package techweek.armeria;
 
-import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.Server;
+import com.linecorp.armeria.server.docs.DocService;
 import com.linecorp.armeria.server.grpc.GrpcService;
 
 import io.grpc.stub.StreamObserver;
@@ -16,11 +16,13 @@ public class Main {
                 GrpcService.builder()
                            .addService(new GreetingService())
                            .enableHttpJsonTranscoding(true)
+                           .enableUnframedRequests(true)
                            .build();
         final Server server =
                 Server.builder()
                       .http(8080)
                       .service(grpcService)
+                      .serviceUnder("/docs", new DocService())
                       .build();
 
         server.start().join();
