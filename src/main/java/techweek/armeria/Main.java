@@ -15,14 +15,11 @@ public class Main {
         final GrpcService grpcService =
                 GrpcService.builder()
                            .addService(new GreetingService())
+                           .enableHttpJsonTranscoding(true)
                            .build();
         final Server server =
                 Server.builder()
                       .http(8080)
-                      .service("/greeting/:name", (ctx, req) -> {
-                          final String name = ctx.pathParam("name");
-                          return HttpResponse.of("Hello, " + name + '!');
-                      })
                       .service(grpcService)
                       .build();
 

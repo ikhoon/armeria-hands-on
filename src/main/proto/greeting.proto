@@ -1,10 +1,15 @@
 syntax = "proto3";
 
 package techweek.armeria;
-option java_package = "techweek.armeria";
+
+import "google/api/annotations.proto";
 
 service GreetingService {
-  rpc Hello (HelloRequest) returns (HelloReply) {}
+  rpc Hello (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/greeting/{name}"
+    };
+  }
 }
 
 message HelloRequest {
