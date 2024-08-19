@@ -9,10 +9,15 @@ import org.junit.jupiter.api.Test;
 import com.linecorp.armeria.client.BlockingWebClient;
 import com.linecorp.armeria.client.RestClient;
 import com.linecorp.armeria.client.WebClient;
+import com.linecorp.armeria.client.grpc.GrpcClients;
 import com.linecorp.armeria.common.AggregatedHttpResponse;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.common.ResponseEntity;
+
+import techweek.armeria.Greeting.HelloReply;
+import techweek.armeria.Greeting.HelloRequest;
+import techweek.armeria.GreetingServiceGrpc.GreetingServiceBlockingStub;
 
 class MainTest {
 
@@ -47,5 +52,17 @@ class MainTest {
 
         assertThat(response.status()).isEqualTo(HttpStatus.OK);
         assertThat(response.content()).isEqualTo("Hello, Armeria!");
+    }
+
+    @Test
+    void testGreetingGrpc() {
+        final GreetingServiceBlockingStub client =
+                GrpcClients.builder("http://127.0.0.1:8080")
+                           .build(GreetingServiceBlockingStub.class);
+        final HelloRequest request = HelloRequest.newBuilder()
+                                                 .setName("Armeria")
+                                                 .build();
+        final HelloReply reply = client.hello(request);
+        assertThat(reply.getMessage()).isEqualTo("Hello, Armeria!");
     }
 }
