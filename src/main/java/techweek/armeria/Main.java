@@ -52,6 +52,7 @@ public final class Main {
                           final String token = req.headers().get(HttpHeaderNames.AUTHORIZATION, "");
                           return isValidToken(token);
                       }))
+                      .decorator(GrpcLoggingService::new)
                       .build();
 
         server.start().join();
