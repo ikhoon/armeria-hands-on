@@ -15,6 +15,7 @@ import com.linecorp.armeria.server.prometheus.PrometheusExpositionService;
 import com.linecorp.armeria.server.throttling.ThrottlingService;
 import com.linecorp.armeria.server.throttling.ThrottlingStrategy;
 
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import techweek.armeria.Greeting.HelloReply;
@@ -29,6 +30,13 @@ public final class Main {
                            .addService(new GreetingService())
                            .enableHttpJsonTranscoding(true)
                            .enableUnframedRequests(true)
+                           .exceptionHandler((ctx, status, cause, metadata) -> {
+                               if (cause instanceof IllegalArgumentException) {
+                                   return Status.FAILED_PRECONDITION.withCause(cause)
+                                                                    .withDescription(cause.getMessage());
+                               }
+                               return null;
+                           })
                            .build();
 
         final PrometheusMeterRegistry meterRegistry = PrometheusMeterRegistries.newRegistry();
@@ -67,6 +75,12 @@ public final class Main {
         @Override
         public void hello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
             final String name = request.getName();
+            if (name.length() <= 5) {
+                responseObserver.onError(
+                        new IllegalArgumentException("name should have more than 5 characters"));
+                return;
+            }
+
             final HelloReply reply = HelloReply.newBuilder()
                                                .setMessage("Hello, " + name + '!')
                                                .build();
